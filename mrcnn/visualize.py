@@ -3,13 +3,12 @@ import sys
 import random
 import itertools
 import colorsys
+import PIL.ImageDraw as ImageDraw
+import PIL.Image as Image
 
 import numpy as np
 from skimage.measure import find_contours
-import matplotlib.pyplot as plt
-from matplotlib import patches, lines
-from matplotlib.patches import Polygon
-import IPython.display
+
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../")
@@ -60,7 +59,7 @@ def random_colors(N, bright=True):
     return colors
 
 
-def apply_mask(image, mask, color, alpha=0.5):
+def apply_mask(image, mask, color, alpha=0.9):
     """Apply the given mask to the image.
     """
     for c in range(3):
@@ -70,12 +69,12 @@ def apply_mask(image, mask, color, alpha=0.5):
                                   image[:, :, c])
     return image
 
+# 분석되고 보여지는 이미지 생성
 
 def display_instances(image, boxes, masks, class_ids, class_names,
                       scores=None, title="",
-                      figsize=(16, 16), ax=None,
                       show_mask=True, show_mask_polygon=True, show_bbox=True,
-                      colors=None, captions=None, show_caption=True, save_fig_path=None,
+                      colors=None, captions=None, show_caption=True,
                       filter_classes=None, min_score=None):
     """
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
@@ -102,23 +101,14 @@ def display_instances(image, boxes, masks, class_ids, class_names,
     else:
         assert boxes.shape[0] == masks.shape[-1] == class_ids.shape[0]
 
-    # If no axis is passed, create one and automatically call show()
-    auto_show = False
-    # if not ax:
-    #     _, ax = plt.subplots(1, figsize=figsize)
-    #     auto_show = True
-
     # Generate random colors
     colors = colors or random_colors(N)
 
     # Show area outside image boundaries.
     height, width = image.shape[:2]
-    # ax.set_ylim(height + 10, -10)
-    # ax.set_xlim(-10, width + 10)
-    # ax.axis('off')
-    # ax.set_title(title)
 
     masked_image = image.astype(np.uint32).copy()
+    img = Image.fromarray(masked_image.astype(np.uint8), 'RGB')
     for i in range(N):
         if filter_classes is None:
             pass
@@ -141,11 +131,7 @@ def display_instances(image, boxes, masks, class_ids, class_names,
             # Skip this instance. Has no bbox. Likely lost in image cropping.
             continue
         y1, x1, y2, x2 = boxes[i]
-        if show_bbox:
-            p = patches.Rectangle((x1, y1), x2 - x1, y2 - y1, linewidth=10,
-                                  alpha=0.7,  # linestyle="dashed",
-                                  edgecolor=color, facecolor='none')
-            # ax.add_patch(p)
+
 
         if show_caption:
             # Label
@@ -156,13 +142,11 @@ def display_instances(image, boxes, masks, class_ids, class_names,
                 caption = "{} {:.3f}".format(label, score) if score else label
             else:
                 caption = captions[i]
-            # ax.text(x1, y1 + 8, caption,
-            #         color='w', size=11, backgroundcolor="none")
+
 
         # Mask
         mask = masks[:, :, i]
-        if show_mask:
-            masked_image = apply_mask(masked_image, mask, color)
+
 
         # Mask Polygon
         if show_mask_polygon:
@@ -172,16 +156,15 @@ def display_instances(image, boxes, masks, class_ids, class_names,
             padded_mask[1:-1, 1:-1] = mask
             contours = find_contours(padded_mask, 0.5)
             for verts in contours:
-                # Subtract the padding and flip (y, x) to (x, y)
+
                 verts = np.fliplr(verts) - 1
-                p = Polygon(verts, facecolor="none", edgecolor=color)
-                # ax.add_patch(p)
-    return masked_image.astype(np.uint8)
-    # ax.imshow(masked_image.astype(np.uint8))
-    # if not (save_fig_path is None):
-    #     plt.savefig(save_fig_path, bbox_inches="tight")
-    # if auto_show:
-    #     plt.show()
+                draw = ImageDraw.Draw(img)
+                verts = list((i, j) for i, j in verts)
+                draw.polygon(verts, fill=500)
+
+    img = np.array(img)
+    return img
+
 
 
 def display_differences(image,
