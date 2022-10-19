@@ -1,4 +1,5 @@
 ## 설명서
+-------------------------------------
 
 $ git clone https://github.com/AwasoftGit/dodream.git
 
