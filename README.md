@@ -1,6 +1,6 @@
 ## 설명서
 
-$ git clone 
+$ git clone https://github.com/AwasoftGit/dodream.git
 
 $ cd dodream
 
