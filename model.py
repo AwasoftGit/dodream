@@ -9,6 +9,8 @@ import mrcnn.visualize
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
 
+# yolo모델 구동
+
 def modelRun(image='', subject=str):
     subject = subject.lower()
     with open(image, 'rb') as frame:
@@ -18,18 +20,16 @@ def modelRun(image='', subject=str):
     frame = np.frombuffer(frame, np.uint8)
     img = cv2.imdecode(frame, cv2.IMREAD_COLOR)
 
-    # net = cv2.dnn.readNet('data/pothole.weights', 'data/julnun.cfg')
+
     net = cv2.dnn.readNet(f'data/{subject}.weights', f'data/{subject}.cfg')
 
     with open(f"data/{subject}.names", "r") as f:
-    # with open("data/pothole.names", "r") as f:
         classes = [line.strip() for line in f.readlines()]
     layer_name = net.getLayerNames()
     output_layers = [layer_name[i - 1] for i in net.getUnconnectedOutLayers()]
 
     colors = np.random.uniform(0, 255, size=(len(classes), 3))
 
-    img = cv2.imread(image)
     img = cv2.resize(img, None, fx=0.4, fy=0.4)
     height, width, channels = img.shape
 
@@ -98,10 +98,11 @@ class InferenceConfig(Config):
     IMAGES_PER_GPU = 1  # BATCH_SIZE=1 과 같은 효과
     BATCH_SIZE = 1
     # NAME은 반드시 주어야 한다.
-    NAME = 'crack'  # NAME을 꼭 주어야 한다.
+    NAME = 'crack'
     NUM_CLASSES = 2  # Background 0번 + class n개
 
 
+# maskrcnn 모델 구동
 
 def mmodelRun(image=''):
     CLASS_NAMES = ["bg", "crack"]

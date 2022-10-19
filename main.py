@@ -112,10 +112,10 @@ class MainUI(QMainWindow):
         """
         self.origin_frame = QLabel()
         self.origin_frame.setScaledContents(True)
-        self.origin_frame.setPixmap(QPixmap("julnun1.jpg").scaled(self.origin_frame.size(), Qt.KeepAspectRatio))
-        # self.origin_frame.setFixedSize(800,800)
+        # self.origin_frame.setPixmap(QPixmap("julnun1.jpg").scaled(self.origin_frame.size(), Qt.KeepAspectRatio))
+
         self.result_frame = QLabel()
-        self.result_frame.setPixmap(QPixmap("julnun2.jpg").scaled(self.result_frame.size(), Qt.KeepAspectRatio))
+        # self.result_frame.setPixmap(QPixmap("julnun2.jpg").scaled(self.result_frame.size(), Qt.KeepAspectRatio))
         self.result_frame.setScaledContents(True)
 
         self.base_body_layout.addWidget(self.origin_frame, 40)
@@ -140,6 +140,8 @@ class MainUI(QMainWindow):
             self.result_frame.setPixmap(result_img.scaled(self.origin_frame.size(), Qt.KeepAspectRatio))
         else:
             pass
+
+# 모델 연결
 
     def runModel(self, img_path, subtext):
         result_img = model.modelRun(img_path, subtext)
